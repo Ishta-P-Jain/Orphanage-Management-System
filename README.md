@@ -175,63 +175,9 @@ http://localhost:3000
 
 You'll see the **Login page** of the app!
 
----
-
-## 🧪 HOW TO TEST THE APP
-
-### Test Registration:
-1. Click **"Register here"** on the login page
-2. Fill in your name, email, and password
-3. Click **Register**
-4. ✅ You should see a green success message
-5. ✅ Check your email inbox — you should receive a welcome email!
-
-### Test Login:
-1. Go to the Login page
-2. Enter the email and password you just registered with
-3. Click **Login**
-4. ✅ You should be redirected to the **Dashboard**
-
-### Test Logout:
-1. On the dashboard, click the red **Logout** button (top right)
-2. ✅ You'll be taken back to the Login page
 
 ---
 
-## 🌐 API ENDPOINTS REFERENCE
-
-| Method | URL                     | What it does              |
-|--------|-------------------------|---------------------------|
-| POST   | /api/auth/register      | Creates a new user        |
-| POST   | /api/auth/login         | Logs in and returns token |
-| GET    | /                       | Health check              |
-
----
-
-## ❌ COMMON ERRORS & FIXES
-
-### "Cannot connect to database"
-- Make sure MySQL is running (check Windows Services or MySQL Workbench)
-- Double-check `DB_PASSWORD` in your `.env` file
-
-### "Email not sending"
-- Make sure 2-Step Verification is ON in your Google account
-- Use App Password, NOT your real Gmail password
-- Check that `EMAIL_USER` and `EMAIL_PASS` in `.env` are correct
-
-### "npm install fails"
-- Make sure you're in the correct folder (backend or frontend)
-- Try running Command Prompt as Administrator
-
-### "Port already in use"
-- Another app is using port 5000 or 3000
-- Change `PORT=5001` in `.env` and restart backend
-- Or close the other app using that port
-
-### "Module not found"
-- Run `npm install` again in the correct folder
-
----
 
 ## 🔒 SECURITY NOTES
 
@@ -242,6 +188,7 @@ You'll see the **Login page** of the app!
 
 ---
 
+
 ## 📞 QUICK REFERENCE — Running the App
 
 Every time you want to use the app:
@@ -251,6 +198,7 @@ Every time you want to use the app:
 3. Open browser → go to `http://localhost:3000`
 
 That's it! 🎉
+
 
 # Orphanage-Management-System
 a web-based application designed to efficiently manage and streamline the daily operations of an orphanage. It provides a centralized platform for administrators to handle records, monitor activities, and improve overall organizational efficiency.
