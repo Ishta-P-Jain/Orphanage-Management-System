@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏠 Orphanage Authentication System
 ## Complete Step-by-Step Setup Guide for Beginners
 
@@ -250,3 +251,7 @@ Every time you want to use the app:
 3. Open browser → go to `http://localhost:3000`
 
 That's it! 🎉
+=======
+# Orphanage-Management-System
+a web-based application designed to efficiently manage and streamline the daily operations of an orphanage. It provides a centralized platform for administrators to handle records, monitor activities, and improve overall organizational efficiency.
+
