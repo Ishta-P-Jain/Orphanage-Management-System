@@ -21,14 +21,12 @@ function Dashboard({ user, onLogout }) {
     { type: 'Donation',    name: 'Anonymous',    detail: '₹5,000',      date: '2024-04-09' },
     { type: 'Application', name: 'Meena Sharma', detail: 'Pending',     date: '2024-04-08' },
     { type: 'Child',       name: 'Arun (Age 7)', detail: 'Admitted',    date: '2024-04-07' },
-    { type: 'User',        name: 'Priya Nair',   detail: 'Registered',  date: '2024-04-06' },
   ];
 
   // ── Management section panels ──
   const sections = [
-    { name: 'Users',        icon: '👤', desc: 'View and manage all registered users and their roles.' },
-    { name: 'Children',     icon: '👧', desc: 'Track children admitted, their details and status.' },
-    { name: 'Donations',    icon: '💰', desc: 'Monitor incoming donations and donor information.' },
+    { name: 'Children', icon: '👧', desc: 'Track children admitted, their details and status.' },
+    { name: 'Donations', icon: '💰', desc: 'Monitor incoming donations and donor information.' },
     { name: 'Applications', icon: '📋', desc: 'Review and process adoption and support applications.' },
   ];
 
@@ -282,14 +280,14 @@ navLink: {
   /* Section Panels */
   panelGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
     gap: '20px',
     marginTop: '14px',
   },
   panel: {
     backgroundColor: '#fff',
     borderRadius: '8px',
-    padding: '22px',
+    padding: '26px',  // 👈 increased
     boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
   },
   panelIcon:  { fontSize: '28px', marginBottom: '10px' },
