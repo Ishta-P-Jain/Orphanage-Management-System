@@ -37,12 +37,30 @@ function Dashboard({ user, onLogout }) {
 
       {/* ── Top Navigation Bar ── */}
       <nav style={styles.navbar}>
+        
+        {/* Left Side */}
         <div style={styles.navBrand}>🏠 Orphanage Manager</div>
+      
+        {/* Center Links */}
+        <div style={styles.navLinks}>
+          <span style={styles.navLink}>Dashboard</span>
+          <span 
+              style={styles.navLink}
+              onMouseOver={e => e.target.style.background = '#34495e'}
+              onMouseOut={e => e.target.style.background = 'transparent'}
+          >            
+               About Us
+          </span>
+          <span style={styles.navLink}>Contact</span>
+        </div>
+
+  {/* Right Side */}
         <div style={styles.navRight}>
           <span style={styles.navUser}>👋 Hello, {user?.name || 'User'}</span>
           <span style={styles.navRole}>{user?.role || 'user'}</span>
           <button style={styles.logoutBtn} onClick={onLogout}>Logout</button>
         </div>
+
       </nav>
 
       {/* ── Page Content ── */}
@@ -151,6 +169,28 @@ const styles = {
     gap: '12px',
     flexWrap: 'wrap',
   },
+  navLinks: {
+  display: 'flex',
+  gap: '20px',
+  alignItems: 'center',
+},
+
+navLink: {
+  fontSize: '14px',
+  color: '#ecf0f1',
+  cursor: 'pointer',
+  fontWeight: '500',
+  transition: '0.2s',
+},
+  navLink: {
+  fontSize: '14px',
+  color: '#ecf0f1',
+  cursor: 'pointer',
+  fontWeight: '500',
+  padding: '5px 8px',
+  borderRadius: '4px',
+},
+
   navUser: {
     fontSize: '14px',
     color: '#ecf0f1',
@@ -184,7 +224,7 @@ const styles = {
     boxSizing: 'border-box',
   },
   pageTitle: {
-    fontSize: '22px',
+    fontSize: '42px',
     color: '#2c3e50',
     marginBottom: '4px',
   },
