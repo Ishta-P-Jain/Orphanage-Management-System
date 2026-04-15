@@ -197,7 +197,7 @@ Every time you want to use the app:
 2. Open **Terminal 2** → go to `frontend/` → run `npm start`
 3. Open browser → go to `http://localhost:3000`
 
-That's it! 🎉
+ 
 
 
 # Orphanage-Management-System
