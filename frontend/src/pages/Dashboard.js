@@ -128,7 +128,7 @@ function Dashboard({ user, onLogout }) {
 
       {/* ── Footer ── */}
       <footer style={styles.footer}>
-        © 2024 Orphanage Manager — Built with ❤️
+        © 2026 Orphanage Manager — Built with ❤️
       </footer>
 
     </div>
@@ -308,11 +308,12 @@ navLink: {
   footer: {
     textAlign: 'center',
     padding: '16px',
-    fontSize: '12px',
-    color: '#aaa',
-    backgroundColor: '#fff',
+    fontSize: '15px',
+    color: '#fdfdfd',
+    backgroundColor: '#374c60',
     borderTop: '1px solid #eee',
     marginTop: 'auto',
+    outerHeight: '60px',
   },
 };
 
