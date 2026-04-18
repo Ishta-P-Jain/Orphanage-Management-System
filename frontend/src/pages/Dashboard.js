@@ -23,7 +23,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
   // ── Applications panel sub-menu ──────────
   // null = hidden, 'choose' = show Donate/Adopt buttons
   const [appMenu, setAppMenu] = useState(false);
-  const [page, setPage] = React.useState('dashboard');
+
 
 
   // Fetch stats and activity when dashboard mounts
@@ -97,11 +97,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
 
         <div style={styles.navLinks}>
           <span style={styles.navLink}>Dashboard</span>
-          <span 
-            style={styles.navLink}
-            onClick={() => setPage('contact')}>           
-            Contact
-          </span>
+          
           <span
             style={styles.navLink}
             onMouseOver={e => e.target.style.background = '#34495e'}
@@ -109,7 +105,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
           >
             About Us
           </span>
-          <span style={styles.navLink}>Contact</span>
+          <span style={styles.navLink}>Contact Us</span>
         </div>
 
         <div style={styles.navRight}>
@@ -121,76 +117,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
 
       {/* ── Main Content ── */}
       <main style={styles.main}>
-        {page === 'contact' && (
-  <div style={styles.contactBox}>
-    
-    <h2 style={styles.pageTitle}>Contact Us</h2>
-    <p style={styles.pageSubtitle}>
-      We would love to hear from you. Reach out for donations, volunteering, or adoption inquiries.
-    </p>
-
-    <div style={styles.contactGrid}>
-      
-      {/* Address */}
-      <div style={styles.contactCard}>
-        <h4>📍 Address</h4>
-        <p>
-          Sunshine Orphanage <br/>
-          #12, Hope Street <br/>
-          Bengaluru, Karnataka – 560001 <br/>
-          India
-        </p>
-      </div>
-
-      {/* Phone */}
-      <div style={styles.contactCard}>
-        <h4>📞 Phone</h4>
-        <p>
-          +91 98765 43210 <br/>
-          +91 91234 56789
-        </p>
-      </div>
-
-      {/* Email */}
-      <div style={styles.contactCard}>
-        <h4>📧 Email</h4>
-        <p>
-          support@sunshineorphanage.org <br/>
-          admin@sunshineorphanage.org
-        </p>
-      </div>
-
-      {/* Working Hours */}
-      <div style={styles.contactCard}>
-        <h4>🕒 Working Hours</h4>
-        <p>
-          Monday – Saturday <br/>
-          9:00 AM – 6:00 PM <br/>
-          Sunday: Closed
-        </p>
-      </div>
-
-    </div>
-
-    {/* Simple Contact Form */}
-    <div style={styles.formBox}>
-      <h3 style={styles.sectionTitle}>Send us a message</h3>
-
-      <input style={styles.input} placeholder="Your Name" />
-      <input style={styles.input} placeholder="Your Email" />
-      <textarea style={styles.textarea} placeholder="Your Message"></textarea>
-
-      <button style={styles.submitBtn}>Send Message</button>
-    </div>
-
-  </div>
-)}
-
-        <h2 style={styles.pageTitle}>Dashboard Overview</h2>
-        <p style={styles.pageSubtitle}>
-          Welcome back! Here's a live summary of the orphanage.
-        </p>
-
+   
         {/* ── Stat Cards (now dynamic) ── */}
         <div style={styles.cardGrid}>
           {statCards.map((stat) => (

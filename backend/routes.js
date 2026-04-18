@@ -1,31 +1,45 @@
 // ============================================
-//  routes.js — NEW FILE
-//  All new API routes (stats, activity,
-//  children, donations, applications)
-//  Auth routes stay in auth.js — untouched.
+//  routes.js — MODIFIED FILE
+//  Changes from previous version:
+//  1. POST /api/donations — added aadhaar validation
+//     + sends confirmation email after success
+//  2. POST /api/applications — added aadhaar validation
+//     + sends confirmation email after success
+//  All GET routes are completely untouched.
 // ============================================
 
 const express = require('express');
 const router  = express.Router();
-const db      = require('./db');  // reuse existing db connection
+const db      = require('./db');
+const { sendDonationEmail, sendApplicationEmail } = require('./mailer');
+
+// ── Aadhaar validation helper ─────────────────
+// Must be exactly 12 digits, numbers only.
+// We do NOT store the real number — we store a
+// masked version: first 8 digits replaced with *
+// e.g. "123456789012" → "********9012"
+const validateAadhaar = (aadhaar) => {
+  return /^\d{12}$/.test(aadhaar);   // regex: exactly 12 digits
+};
+
+const maskAadhaar = (aadhaar) => {
+  // Show only last 4 digits for storage safety
+  return '********' + aadhaar.slice(-4);
+};
 
 
 // ─────────────────────────────────────────────
-//  GET /api/stats
-//  Returns live counts for the dashboard cards
+//  GET /api/stats  (UNCHANGED)
 // ─────────────────────────────────────────────
 router.get('/stats', async (req, res) => {
   try {
-    const [[{ children }]]    = await db.query('SELECT COUNT(*) AS children    FROM children');
-    const [[{ donations }]]   = await db.query('SELECT COUNT(*) AS donations   FROM donations');
-    const [[{ applications }]]= await db.query('SELECT COUNT(*) AS applications FROM applications');
-    const [[{ events }]]      = await db.query('SELECT COUNT(*) AS events      FROM events');
-
-    // Total donation amount (sum of all amounts)
-    const [[{ totalAmount }]] = await db.query(
+    const [[{ children }]]     = await db.query('SELECT COUNT(*) AS children    FROM children');
+    const [[{ donations }]]    = await db.query('SELECT COUNT(*) AS donations   FROM donations');
+    const [[{ applications }]] = await db.query('SELECT COUNT(*) AS applications FROM applications');
+    const [[{ events }]]       = await db.query('SELECT COUNT(*) AS events      FROM events');
+    const [[{ totalAmount }]]  = await db.query(
       'SELECT COALESCE(SUM(amount), 0) AS totalAmount FROM donations'
     );
-
     res.json({ children, donations, applications, events, totalAmount });
   } catch (err) {
     console.error('Stats error:', err);
@@ -35,13 +49,10 @@ router.get('/stats', async (req, res) => {
 
 
 // ─────────────────────────────────────────────
-//  GET /api/activity
-//  Returns the 8 most recent actions across
-//  children, donations, and applications
+//  GET /api/activity  (UNCHANGED)
 // ─────────────────────────────────────────────
 router.get('/activity', async (req, res) => {
   try {
-    // Fetch recent records from each table and label them
     const [childRows] = await db.query(
       `SELECT 'Child' AS type, full_name AS name, status AS detail, created_at AS date
        FROM children ORDER BY created_at DESC LIMIT 4`
@@ -55,17 +66,10 @@ router.get('/activity', async (req, res) => {
       `SELECT 'Application' AS type, applicant_name AS name, status AS detail, submitted_at AS date
        FROM applications ORDER BY submitted_at DESC LIMIT 4`
     );
-
-    // Merge all, sort by date descending, take top 8
     const all = [...childRows, ...donationRows, ...appRows]
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 8)
-      .map(row => ({
-        ...row,
-        // Format date to YYYY-MM-DD string for clean display
-        date: new Date(row.date).toISOString().split('T')[0],
-      }));
-
+      .map(row => ({ ...row, date: new Date(row.date).toISOString().split('T')[0] }));
     res.json(all);
   } catch (err) {
     console.error('Activity error:', err);
@@ -75,8 +79,7 @@ router.get('/activity', async (req, res) => {
 
 
 // ─────────────────────────────────────────────
-//  GET /api/children
-//  Returns all children records
+//  GET /api/children  (UNCHANGED)
 // ─────────────────────────────────────────────
 router.get('/children', async (req, res) => {
   try {
@@ -94,8 +97,7 @@ router.get('/children', async (req, res) => {
 
 
 // ─────────────────────────────────────────────
-//  GET /api/donations
-//  Returns all donation records
+//  GET /api/donations  (UNCHANGED)
 // ─────────────────────────────────────────────
 router.get('/donations', async (req, res) => {
   try {
@@ -112,12 +114,13 @@ router.get('/donations', async (req, res) => {
 
 
 // ─────────────────────────────────────────────
-//  POST /api/donations
-//  Saves a new donation from the Donate form
+//  POST /api/donations  (MODIFIED)
+//  Added: aadhaar validation + email after save
 // ─────────────────────────────────────────────
 router.post('/donations', async (req, res) => {
-  const { donor_name, donor_email, amount, message } = req.body;
+  const { donor_name, donor_email, amount, message, aadhaar } = req.body;
 
+  // 1. Basic field validation
   if (!donor_name || !donor_email || !amount) {
     return res.status(400).json({ message: 'Name, email, and amount are required.' });
   }
@@ -125,12 +128,30 @@ router.post('/donations', async (req, res) => {
     return res.status(400).json({ message: 'Amount must be a positive number.' });
   }
 
+  // 2. Aadhaar validation — must be exactly 12 digits
+  if (!aadhaar || !validateAadhaar(aadhaar)) {
+    return res.status(400).json({
+      message: 'Aadhaar number must be exactly 12 digits (numbers only).'
+    });
+  }
+
   try {
+    // 3. Store masked Aadhaar (never store full number in plain text)
+    const maskedAadhaar = maskAadhaar(aadhaar);
+
     await db.query(
-      `INSERT INTO donations (donor_name, donor_email, amount, donation_type, purpose)
-       VALUES (?, ?, ?, 'UPI', ?)`,
-      [donor_name, donor_email, amount, message || null]
+      `INSERT INTO donations (donor_name, donor_email, amount, donation_type, purpose, aadhaar_masked)
+       VALUES (?, ?, ?, 'UPI', ?, ?)`,
+      [donor_name, donor_email, amount, message || null, maskedAadhaar]
     );
+
+    // 4. Send confirmation email (non-blocking — won't fail the request if email fails)
+    try {
+      await sendDonationEmail(donor_email, donor_name, amount);
+    } catch (emailErr) {
+      console.warn('Donation email failed (donation still saved):', emailErr.message);
+    }
+
     res.status(201).json({ message: 'Thank you! Your donation has been recorded.' });
   } catch (err) {
     console.error('Donation insert error:', err);
@@ -140,8 +161,7 @@ router.post('/donations', async (req, res) => {
 
 
 // ─────────────────────────────────────────────
-//  GET /api/applications
-//  Returns all applications
+//  GET /api/applications  (UNCHANGED)
 // ─────────────────────────────────────────────
 router.get('/applications', async (req, res) => {
   try {
@@ -159,22 +179,42 @@ router.get('/applications', async (req, res) => {
 
 
 // ─────────────────────────────────────────────
-//  POST /api/applications
-//  Saves a new adoption/visit application
+//  POST /api/applications  (MODIFIED)
+//  Added: aadhaar validation + email after save
 // ─────────────────────────────────────────────
 router.post('/applications', async (req, res) => {
-  const { applicant_name, applicant_email, applicant_phone, application_type, message } = req.body;
+  const { applicant_name, applicant_email, applicant_phone, application_type, message, aadhaar } = req.body;
 
+  // 1. Basic field validation
   if (!applicant_name || !applicant_email || !application_type) {
     return res.status(400).json({ message: 'Name, email, and application type are required.' });
   }
 
+  // 2. Aadhaar validation — must be exactly 12 digits
+  if (!aadhaar || !validateAadhaar(aadhaar)) {
+    return res.status(400).json({
+      message: 'Aadhaar number must be exactly 12 digits (numbers only).'
+    });
+  }
+
   try {
+    // 3. Store masked Aadhaar
+    const maskedAadhaar = maskAadhaar(aadhaar);
+
     await db.query(
-      `INSERT INTO applications (applicant_name, applicant_email, applicant_phone, application_type, message)
-       VALUES (?, ?, ?, ?, ?)`,
-      [applicant_name, applicant_email, applicant_phone || null, application_type, message || null]
+      `INSERT INTO applications
+         (applicant_name, applicant_email, applicant_phone, application_type, message, aadhaar_masked)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [applicant_name, applicant_email, applicant_phone || null, application_type, message || null, maskedAadhaar]
     );
+
+    // 4. Send confirmation email
+    try {
+      await sendApplicationEmail(applicant_email, applicant_name, application_type);
+    } catch (emailErr) {
+      console.warn('Application email failed (application still saved):', emailErr.message);
+    }
+
     res.status(201).json({ message: 'Application submitted successfully! We will contact you soon.' });
   } catch (err) {
     console.error('Application insert error:', err);
