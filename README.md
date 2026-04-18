@@ -2,34 +2,6 @@
 # 🏠 Orphanage Authentication System
 ## Complete Step-by-Step Setup Guide for Beginners
 
----
-
-## 📁 Project Structure
-
-```
-orphanage-auth/
-│
-├── database.sql                   ← Run this in MySQL first
-│
-├── backend/
-│   ├── .env                       ← Your secret config (edit this!)
-│   ├── package.json               ← Node.js dependencies list
-│   ├── server.js                  ← Express server entry point
-│   ├── db.js                      ← MySQL connection
-│   ├── mailer.js                  ← Email sender (Nodemailer)
-│   └── auth.js                    ← Register & Login routes
-│
-└── frontend/
-    ├── package.json               ← React dependencies list
-    └── src/
-        ├── index.js               ← React entry point
-        ├── App.js                 ← Root component (page switching)
-        ├── api.js                 ← API call functions
-        └── pages/
-            ├── Login.js           ← Login page
-            ├── Register.js        ← Registration page
-            └── Dashboard.js       ← Dashboard (visual only)
-```
 
 ---
 
