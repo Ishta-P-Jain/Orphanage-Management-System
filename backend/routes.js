@@ -1,31 +1,87 @@
 // ============================================
 //  routes.js — MODIFIED FILE
 //  Changes from previous version:
-//  1. POST /api/donations — added aadhaar validation
-//     + sends confirmation email after success
-//  2. POST /api/applications — added aadhaar validation
-//     + sends confirmation email after success
+//  1. Added POST /api/verify/send-otp
+//     → generates OTP, emails it, stores in memory
+//  2. Added POST /api/verify/check-otp
+//     → validates the OTP the user typed in
+//  3. POST /api/donations — checks emailVerified flag
+//  4. POST /api/applications — checks emailVerified flag
 //  All GET routes are completely untouched.
 // ============================================
 
 const express = require('express');
 const router  = express.Router();
 const db      = require('./db');
-const { sendDonationEmail, sendApplicationEmail } = require('./mailer');
+const { sendDonationEmail, sendApplicationEmail, sendOtpEmail } = require('./mailer');
+const { saveOtp, verifyOtp, generateOtp } = require('./otpStore');
 
-// ── Aadhaar validation helper ─────────────────
-// Must be exactly 12 digits, numbers only.
-// We do NOT store the real number — we store a
-// masked version: first 8 digits replaced with *
-// e.g. "123456789012" → "********9012"
-const validateAadhaar = (aadhaar) => {
-  return /^\d{12}$/.test(aadhaar);   // regex: exactly 12 digits
-};
+// ── Aadhaar helpers (unchanged) ───────────────
+const validateAadhaar = (aadhaar) => /^\d{12}$/.test(aadhaar);
+const maskAadhaar     = (aadhaar) => '********' + aadhaar.slice(-4);
 
-const maskAadhaar = (aadhaar) => {
-  // Show only last 4 digits for storage safety
-  return '********' + aadhaar.slice(-4);
-};
+
+// ─────────────────────────────────────────────
+//  POST /api/verify/send-otp  ← NEW
+//  Step 1: User clicks "Send OTP" button.
+//  Generates a 6-digit OTP, saves it in memory
+//  with 10-min expiry, then emails it.
+// ─────────────────────────────────────────────
+router.post('/verify/send-otp', async (req, res) => {
+  const { email } = req.body;
+
+  // Basic email format check
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ message: 'Please provide a valid email address.' });
+  }
+
+  try {
+    const otp = generateOtp();  // e.g. "847203"
+    saveOtp(email, otp);        // store with 10-min expiry
+
+    // Send OTP email
+    await sendOtpEmail(email, otp);
+
+    console.log(`OTP sent to ${email}`); // log for debugging (remove in production)
+
+    return res.json({
+      message: `A 6-digit OTP has been sent to ${email}. Please check your inbox.`,
+    });
+  } catch (err) {
+    console.error('Send OTP error:', err.message);
+    return res.status(500).json({
+      message: 'Could not send OTP email. Please check your email address and try again.',
+    });
+  }
+});
+
+
+// ─────────────────────────────────────────────
+//  POST /api/verify/check-otp  ← NEW
+//  Step 2: User types the OTP they received.
+//  Returns { verified: true } or an error.
+// ─────────────────────────────────────────────
+router.post('/verify/check-otp', (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ message: 'Email and OTP are required.' });
+  }
+
+  const result = verifyOtp(email, otp.trim());
+
+  if (result === 'valid') {
+    return res.json({ verified: true, message: 'Email verified successfully!' });
+  }
+  if (result === 'expired') {
+    return res.status(400).json({ verified: false, message: 'OTP has expired. Please request a new one.' });
+  }
+  if (result === 'not_found') {
+    return res.status(400).json({ verified: false, message: 'No OTP found for this email. Please request one first.' });
+  }
+  // result === 'invalid'
+  return res.status(400).json({ verified: false, message: 'Incorrect OTP. Please try again.' });
+});
 
 
 // ─────────────────────────────────────────────
@@ -115,12 +171,21 @@ router.get('/donations', async (req, res) => {
 
 // ─────────────────────────────────────────────
 //  POST /api/donations  (MODIFIED)
-//  Added: aadhaar validation + email after save
+//  Added: emailVerified check before saving.
+//  User must verify email via OTP first.
 // ─────────────────────────────────────────────
 router.post('/donations', async (req, res) => {
-  const { donor_name, donor_email, amount, message, aadhaar } = req.body;
+  const { donor_name, donor_email, amount, message, aadhaar, emailVerified } = req.body;
 
-  // 1. Basic field validation
+  // 1. Check email was verified via OTP
+  // The frontend sends emailVerified: true only after /check-otp returned verified: true
+  if (!emailVerified) {
+    return res.status(400).json({
+      message: 'Please verify your email address with the OTP before submitting.'
+    });
+  }
+
+  // 2. Basic field validation
   if (!donor_name || !donor_email || !amount) {
     return res.status(400).json({ message: 'Name, email, and amount are required.' });
   }
@@ -128,7 +193,7 @@ router.post('/donations', async (req, res) => {
     return res.status(400).json({ message: 'Amount must be a positive number.' });
   }
 
-  // 2. Aadhaar validation — must be exactly 12 digits
+  // 3. Aadhaar validation
   if (!aadhaar || !validateAadhaar(aadhaar)) {
     return res.status(400).json({
       message: 'Aadhaar number must be exactly 12 digits (numbers only).'
@@ -136,7 +201,6 @@ router.post('/donations', async (req, res) => {
   }
 
   try {
-    // 3. Store masked Aadhaar (never store full number in plain text)
     const maskedAadhaar = maskAadhaar(aadhaar);
 
     await db.query(
@@ -145,11 +209,10 @@ router.post('/donations', async (req, res) => {
       [donor_name, donor_email, amount, message || null, maskedAadhaar]
     );
 
-    // 4. Send confirmation email (non-blocking — won't fail the request if email fails)
     try {
       await sendDonationEmail(donor_email, donor_name, amount);
     } catch (emailErr) {
-      console.warn('Donation email failed (donation still saved):', emailErr.message);
+      console.warn('Donation confirmation email failed:', emailErr.message);
     }
 
     res.status(201).json({ message: 'Thank you! Your donation has been recorded.' });
@@ -180,17 +243,24 @@ router.get('/applications', async (req, res) => {
 
 // ─────────────────────────────────────────────
 //  POST /api/applications  (MODIFIED)
-//  Added: aadhaar validation + email after save
+//  Added: emailVerified check before saving.
 // ─────────────────────────────────────────────
 router.post('/applications', async (req, res) => {
-  const { applicant_name, applicant_email, applicant_phone, application_type, message, aadhaar } = req.body;
+  const { applicant_name, applicant_email, applicant_phone, application_type, message, aadhaar, emailVerified } = req.body;
 
-  // 1. Basic field validation
+  // 1. Check email was verified via OTP
+  if (!emailVerified) {
+    return res.status(400).json({
+      message: 'Please verify your email address with the OTP before submitting.'
+    });
+  }
+
+  // 2. Basic field validation
   if (!applicant_name || !applicant_email || !application_type) {
     return res.status(400).json({ message: 'Name, email, and application type are required.' });
   }
 
-  // 2. Aadhaar validation — must be exactly 12 digits
+  // 3. Aadhaar validation
   if (!aadhaar || !validateAadhaar(aadhaar)) {
     return res.status(400).json({
       message: 'Aadhaar number must be exactly 12 digits (numbers only).'
@@ -198,7 +268,6 @@ router.post('/applications', async (req, res) => {
   }
 
   try {
-    // 3. Store masked Aadhaar
     const maskedAadhaar = maskAadhaar(aadhaar);
 
     await db.query(
@@ -208,11 +277,10 @@ router.post('/applications', async (req, res) => {
       [applicant_name, applicant_email, applicant_phone || null, application_type, message || null, maskedAadhaar]
     );
 
-    // 4. Send confirmation email
     try {
       await sendApplicationEmail(applicant_email, applicant_name, application_type);
     } catch (emailErr) {
-      console.warn('Application email failed (application still saved):', emailErr.message);
+      console.warn('Application confirmation email failed:', emailErr.message);
     }
 
     res.status(201).json({ message: 'Application submitted successfully! We will contact you soon.' });
