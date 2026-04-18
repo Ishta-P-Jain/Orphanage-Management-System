@@ -179,15 +179,40 @@ You'll see the **Login page** of the app!
 ---
 
 
-## 🔒 SECURITY NOTES
-
-- Passwords are **hashed with bcrypt** — never stored as plain text
-- JWT tokens expire after **1 day**
-- Never commit your `.env` file to GitHub
-- Add `.env` to your `.gitignore` file if sharing the project
 
 ---
+Orphanagw-management-system/
+│
+├── database.sql                  ← Run this FIRST in MySQL
+├── children_dummy_data.sql       ← Run this SECOND (15 children + DB migration)
+│
+├── backend/
+│   ├── .env                      ← ⚠️ Edit this with your MySQL & Gmail details
+│   ├── package.json
+│   ├── server.js                 ← Express entry point
+│   ├── db.js                     ← MySQL connection
+│   ├── auth.js                   ← Register & Login routes
+│   ├── routes.js                 ← All feature routes (stats, children, donations, OTP...)
+│   ├── mailer.js                 ← All email functions
+│   └── otpStore.js               ← OTP memory store (10-min expiry)
+│
+└── frontend/
+    ├── package.json
+    └── src/
+        ├── index.js
+        ├── App.js                ← Page switcher (all 8 pages)
+        ├── api.js                ← All fetch() functions
+        └── pages/
+            ├── Login.js          ← Login page
+            ├── Register.js       ← Register page
+            ├── Dashboard.js      ← Live stats + manage sections
+            ├── Children.js       ← View all children (cards)
+            ├── Donations.js      ← View all donations (table)
+            ├── DonateForm.js     ← Donate form + OTP verification
+            ├── AdoptForm.js      ← Adopt form + OTP verification
+            └── ContactUs.js      ← Contact info page
 
+---
 
 ## 📞 QUICK REFERENCE — Running the App
 
