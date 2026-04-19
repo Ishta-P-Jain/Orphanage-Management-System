@@ -45,14 +45,14 @@ const sendEmail = async (mailOptions) => {
 const emailShell = (bodyContent) => `
   <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;background:#fff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;">
     <div style="background:#2c3e50;padding:26px 30px;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:1px;">Orphanage Manager</h1>
+      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:1px;">Hope Orphanage</h1>
       <p style="color:#95a5a6;margin:6px 0 0;font-size:13px;">Caring for every child, every day</p>
     </div>
     <div style="padding:32px 30px;">${bodyContent}</div>
     <div style="background:#f8f9fa;padding:16px 30px;text-align:center;border-top:1px solid #eee;">
       <p style="color:#bbb;font-size:12px;margin:0;">
         This is an automated email - please do not reply.<br/>
-        &copy; 2024 Orphanage Manager. All rights reserved.
+        &copy; 2026 Hope Orphanage. All rights reserved.
       </p>
     </div>
   </div>
@@ -80,9 +80,9 @@ const sendRegistrationEmail = async (toEmail, name) => {
     <p style="font-size:12px;color:#aaa;">If you did not create this account, please ignore this email.</p>
   `;
   await sendEmail({
-    from: `"Orphanage Manager" <${process.env.EMAIL_USER}>`,
+    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: 'You have successfully registered - Orphanage Manager',
+    subject: 'You have successfully registered - Hope Orphanage',
     html: emailShell(body),
   });
 };
@@ -96,7 +96,7 @@ const sendLoginEmail = async (toEmail, name) => {
     <h2 style="color:#4a90e2;margin-top:0;">Login Confirmed!</h2>
     <p style="font-size:15px;color:#333;line-height:1.8;">Hello <strong>${name}</strong>,</p>
     <p style="font-size:14px;color:#555;line-height:1.8;">
-      You have successfully logged into the <strong>Orphanage Manager</strong> portal. Welcome back!
+      You have successfully logged into the <strong>Hope Orphanage</strong> portal. Welcome back!
     </p>
     <div style="background:#eaf4ff;border-left:4px solid #4a90e2;padding:14px 18px;border-radius:5px;margin:22px 0;">
       <p style="margin:0;font-size:13px;color:#2c3e50;line-height:1.9;">
@@ -113,9 +113,9 @@ const sendLoginEmail = async (toEmail, name) => {
     </div>
   `;
   await sendEmail({
-    from: `"Orphanage Manager" <${process.env.EMAIL_USER}>`,
+    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: 'You have successfully logged in - Orphanage Manager',
+    subject: 'You have successfully logged in - Hope Orphanage',
     html: emailShell(body),
   });
 };
@@ -144,9 +144,9 @@ const sendDonationEmail = async (toEmail, name, amount) => {
     </div>
   `;
   await sendEmail({
-    from: `"Orphanage Manager" <${process.env.EMAIL_USER}>`,
+    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: 'Thank you for your donation - Orphanage Manager',
+    subject: 'Thank you for your donation - Hope Orphanage',
     html: emailShell(body),
   });
 };
@@ -175,9 +175,9 @@ const sendApplicationEmail = async (toEmail, name, applicationType) => {
     </div>
   `;
   await sendEmail({
-    from: `"Orphanage Manager" <${process.env.EMAIL_USER}>`,
+    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: `Thank you for your ${applicationType} application - Orphanage Manager`,
+    subject: `Thank you for your ${applicationType} application - Hope Orphanage`,
     html: emailShell(body),
   });
 };
@@ -190,7 +190,7 @@ const sendOtpEmail = async (toEmail, otp) => {
     <h2 style="color:#2c3e50;margin-top:0;">Your Email Verification Code 🔑</h2>
     <p style="font-size:14px;color:#555;line-height:1.8;">
       You requested to verify your email address for a form submission on
-      <strong>Orphanage Manager</strong>. Use the code below:
+      <strong>Hope Orphanage</strong>. Use the code below:
     </p>
 
     <!-- Big OTP display box -->
@@ -228,9 +228,9 @@ const sendOtpEmail = async (toEmail, otp) => {
   `;
 
   await sendEmail({
-    from: `"Orphanage Manager" <${process.env.EMAIL_USER}>`,
+    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
     to:   toEmail,
-    subject: 'Your OTP for Email Verification - Orphanage Manager',
+    subject: 'Your OTP for Email Verification - Hope Orphanage',
     html: emailShell(body),
   });
 };
