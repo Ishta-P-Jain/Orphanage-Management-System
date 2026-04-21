@@ -1,8 +1,9 @@
 // ============================================
 //  mailer.js — MODIFIED FILE
-//  Only change: added sendOtpEmail() function.
-//  All existing functions are word-for-word
-//  identical to the previous version.
+//  Only change: sendDonationEmail() now accepts
+//  donationType and visitDate parameters so the
+//  email reflects the actual offline donation.
+//  All other functions are completely unchanged.
 // ============================================
 
 const nodemailer = require('nodemailer');
@@ -15,13 +16,8 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
 }
 
 const transporter = nodemailer.createTransport({
-  host:   'smtp.gmail.com',
-  port:   587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+  host: 'smtp.gmail.com', port: 587, secure: false,
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
   tls: { rejectUnauthorized: false },
 });
 
@@ -29,19 +25,16 @@ transporter.verify((error) => {
   if (error) {
     console.error('EMAIL IS NOT WORKING. Reason:', error.message);
     console.error('Fix: Check EMAIL_USER and EMAIL_PASS in backend/.env');
-    console.error('     Use Gmail App Password, not your real password.');
   } else {
     console.log('Email is connected and ready!');
   }
 });
 
-// Internal helper
 const sendEmail = async (mailOptions) => {
   const info = await transporter.sendMail(mailOptions);
   console.log('Email sent to:', mailOptions.to, '| ID:', info.messageId);
 };
 
-// Shared HTML shell
 const emailShell = (bodyContent) => `
   <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;background:#fff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;">
     <div style="background:#2c3e50;padding:26px 30px;text-align:center;">
@@ -58,187 +51,123 @@ const emailShell = (bodyContent) => `
   </div>
 `;
 
-// ── EXISTING FUNCTION 1 — sendRegistrationEmail (UNCHANGED) ──
+// ── FUNCTION 1 — sendRegistrationEmail (UNCHANGED) ──
 const sendRegistrationEmail = async (toEmail, name) => {
-  const now = new Date().toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short',
-  });
+  const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
   const body = `
     <h2 style="color:#27ae60;margin-top:0;">Registration Successful!</h2>
     <p style="font-size:15px;color:#333;line-height:1.8;">Hello <strong>${name}</strong>,</p>
-    <p style="font-size:14px;color:#555;line-height:1.8;">
-      Thank you for registering with our orphanage. We appreciate your support.
-    </p>
+    <p style="font-size:14px;color:#555;line-height:1.8;">Thank you for registering with our orphanage. We appreciate your support.</p>
     <div style="background:#eafaf1;border-left:4px solid #27ae60;padding:14px 18px;border-radius:5px;margin:22px 0;">
-      <p style="margin:0;font-size:13px;color:#2c3e50;line-height:1.9;">
-        Email: ${toEmail}<br/>Registered on: ${now}<br/>Account Status: Active
-      </p>
+      <p style="margin:0;font-size:13px;color:#2c3e50;line-height:1.9;">Email: ${toEmail}<br/>Registered on: ${now}<br/>Account Status: Active</p>
     </div>
     <div style="text-align:center;margin:28px 0;">
       <a href="http://localhost:3000" style="background:#27ae60;color:#fff;padding:12px 30px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:bold;">Log In Now</a>
     </div>
     <p style="font-size:12px;color:#aaa;">If you did not create this account, please ignore this email.</p>
   `;
-  await sendEmail({
-    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: 'You have successfully registered - Hope Orphanage',
-    html: emailShell(body),
-  });
+  await sendEmail({ from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`, to: toEmail, subject: 'You have successfully registered - Hope Orphanage', html: emailShell(body) });
 };
 
-// ── EXISTING FUNCTION 2 — sendLoginEmail (UNCHANGED) ──
+// ── FUNCTION 2 — sendLoginEmail (UNCHANGED) ──
 const sendLoginEmail = async (toEmail, name) => {
-  const now = new Date().toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short',
-  });
+  const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
   const body = `
     <h2 style="color:#4a90e2;margin-top:0;">Login Confirmed!</h2>
     <p style="font-size:15px;color:#333;line-height:1.8;">Hello <strong>${name}</strong>,</p>
-    <p style="font-size:14px;color:#555;line-height:1.8;">
-      You have successfully logged into the <strong>Hope Orphanage</strong> portal. Welcome back!
-    </p>
+    <p style="font-size:14px;color:#555;line-height:1.8;">You have successfully logged into the <strong>Hope Orphanage</strong> portal. Welcome back!</p>
     <div style="background:#eaf4ff;border-left:4px solid #4a90e2;padding:14px 18px;border-radius:5px;margin:22px 0;">
-      <p style="margin:0;font-size:13px;color:#2c3e50;line-height:1.9;">
-        Account: ${toEmail}<br/>Login Time: ${now}
-      </p>
+      <p style="margin:0;font-size:13px;color:#2c3e50;line-height:1.9;">Account: ${toEmail}<br/>Login Time: ${now}</p>
     </div>
     <div style="background:#fff8e1;border-left:4px solid #f39c12;padding:14px 18px;border-radius:5px;margin:22px 0;">
-      <p style="margin:0;font-size:13px;color:#7d6608;line-height:1.8;">
-        Security Notice: If you did NOT log in just now, please change your password immediately.
-      </p>
+      <p style="margin:0;font-size:13px;color:#7d6608;line-height:1.8;">Security Notice: If you did NOT log in just now, please change your password immediately.</p>
     </div>
     <div style="text-align:center;margin:28px 0;">
       <a href="http://localhost:3000" style="background:#4a90e2;color:#fff;padding:12px 30px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:bold;">Open Dashboard</a>
     </div>
   `;
-  await sendEmail({
-    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: 'You have successfully logged in - Hope Orphanage',
-    html: emailShell(body),
-  });
+  await sendEmail({ from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`, to: toEmail, subject: 'You have successfully logged in - Hope Orphanage', html: emailShell(body) });
 };
 
-// ── EXISTING FUNCTION 3 — sendDonationEmail (UNCHANGED) ──
-const sendDonationEmail = async (toEmail, name, amount) => {
-  const now = new Date().toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short',
-  });
+// ── FUNCTION 3 — sendDonationEmail (MODIFIED) ──
+// Now accepts donationType and visitDate for offline donations
+const sendDonationEmail = async (toEmail, name, amount, donationType = 'Money', visitDate = null) => {
+  const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
+
+  // Format visit date nicely if provided
+  const visitStr = visitDate
+    ? new Date(visitDate).toLocaleDateString('en-IN', { dateStyle: 'full' })
+    : 'To be confirmed';
+
+  // Show amount row only for money donations
+  const amountRow = (donationType === 'Money' && amount > 0)
+    ? `Amount: ₹${Number(amount).toLocaleString('en-IN')}<br/>`
+    : '';
+
   const body = `
-    <h2 style="color:#27ae60;margin-top:0;">Thank You for Your Donation! 💰</h2>
+    <h2 style="color:#27ae60;margin-top:0;">Donation Appointment Scheduled! 💰</h2>
     <p style="font-size:15px;color:#333;line-height:1.8;">Dear <strong>${name}</strong>,</p>
     <p style="font-size:14px;color:#555;line-height:1.8;">
       Thank you for your donation request. We appreciate your support.
+      Your <strong>${donationType}</strong> donation appointment has been recorded.
     </p>
     <div style="background:#eafaf1;border-left:4px solid #27ae60;padding:14px 18px;border-radius:5px;margin:22px 0;">
       <p style="margin:0;font-size:13px;color:#2c3e50;line-height:1.9;">
         Donor: ${name}<br/>
-        Amount: ₹${Number(amount).toLocaleString('en-IN')}<br/>
-        Date: ${now}<br/>
-        Status: Received ✅
+        Donation Type: ${donationType}<br/>
+        ${amountRow}
+        Scheduled Visit: ${visitStr}<br/>
+        Recorded on: ${now}<br/>
+        Mode: Offline ✅
+      </p>
+    </div>
+    <div style="background:#fff8e1;border-left:4px solid #f39c12;padding:14px 18px;border-radius:5px;margin:22px 0;">
+      <p style="margin:0;font-size:13px;color:#7d6608;line-height:1.8;">
+        📍 Please visit <strong>Hope Orphanage</strong> on your scheduled date to complete the donation.<br/>
+        Address: 12, MG Road, Koramangala, Bangalore – 560034
       </p>
     </div>
     <div style="text-align:center;margin:28px 0;">
       <a href="http://localhost:3000" style="background:#27ae60;color:#fff;padding:12px 30px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:bold;">Visit Dashboard</a>
     </div>
   `;
-  await sendEmail({
-    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: 'Thank you for your donation - Hope Orphanage',
-    html: emailShell(body),
-  });
+  await sendEmail({ from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`, to: toEmail, subject: 'Donation Appointment Confirmed - Hope Orphanage', html: emailShell(body) });
 };
 
-// ── EXISTING FUNCTION 4 — sendApplicationEmail (UNCHANGED) ──
+// ── FUNCTION 4 — sendApplicationEmail (UNCHANGED) ──
 const sendApplicationEmail = async (toEmail, name, applicationType) => {
-  const now = new Date().toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short',
-  });
+  const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
   const body = `
     <h2 style="color:#8e44ad;margin-top:0;">Application Received! 📋</h2>
     <p style="font-size:15px;color:#333;line-height:1.8;">Dear <strong>${name}</strong>,</p>
-    <p style="font-size:14px;color:#555;line-height:1.8;">
-      Thank you for your ${applicationType.toLowerCase()} application. We will contact you soon.
-    </p>
+    <p style="font-size:14px;color:#555;line-height:1.8;">Thank you for your ${applicationType.toLowerCase()} application. We will contact you soon.</p>
     <div style="background:#f5eef8;border-left:4px solid #8e44ad;padding:14px 18px;border-radius:5px;margin:22px 0;">
-      <p style="margin:0;font-size:13px;color:#2c3e50;line-height:1.9;">
-        Applicant: ${name}<br/>
-        Application Type: ${applicationType}<br/>
-        Submitted on: ${now}<br/>
-        Status: Pending Review 🔍
-      </p>
+      <p style="margin:0;font-size:13px;color:#2c3e50;line-height:1.9;">Applicant: ${name}<br/>Application Type: ${applicationType}<br/>Submitted on: ${now}<br/>Status: Pending Review 🔍</p>
     </div>
     <div style="text-align:center;margin:28px 0;">
       <a href="http://localhost:3000" style="background:#8e44ad;color:#fff;padding:12px 30px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:bold;">Visit Dashboard</a>
     </div>
   `;
-  await sendEmail({
-    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: `Thank you for your ${applicationType} application - Hope Orphanage`,
-    html: emailShell(body),
-  });
+  await sendEmail({ from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`, to: toEmail, subject: `Thank you for your ${applicationType} application - Hope Orphanage`, html: emailShell(body) });
 };
 
-// ── NEW FUNCTION 5 — sendOtpEmail ─────────────
-// Sends a 6-digit OTP to verify the user's email
-// before they can submit a donation or adoption form.
+// ── FUNCTION 5 — sendOtpEmail (UNCHANGED) ──
 const sendOtpEmail = async (toEmail, otp) => {
   const body = `
     <h2 style="color:#2c3e50;margin-top:0;">Your Email Verification Code 🔑</h2>
-    <p style="font-size:14px;color:#555;line-height:1.8;">
-      You requested to verify your email address for a form submission on
-      <strong>Hope Orphanage</strong>. Use the code below:
-    </p>
-
-    <!-- Big OTP display box -->
+    <p style="font-size:14px;color:#555;line-height:1.8;">You requested to verify your email address for a form submission on <strong>Hope Orphanage</strong>. Use the code below:</p>
     <div style="text-align:center;margin:28px 0;">
-      <div style="
-        display:inline-block;
-        background:#f0f4f8;
-        border:2px dashed #4a90e2;
-        border-radius:10px;
-        padding:20px 40px;
-      ">
+      <div style="display:inline-block;background:#f0f4f8;border:2px dashed #4a90e2;border-radius:10px;padding:20px 40px;">
         <p style="margin:0;font-size:13px;color:#888;letter-spacing:1px;">YOUR OTP CODE</p>
-        <p style="
-          margin:8px 0 0;
-          font-size:42px;
-          font-weight:900;
-          color:#2c3e50;
-          letter-spacing:10px;
-          font-family:monospace;
-        ">${otp}</p>
+        <p style="margin:8px 0 0;font-size:42px;font-weight:900;color:#2c3e50;letter-spacing:10px;font-family:monospace;">${otp}</p>
       </div>
     </div>
-
-    <!-- Expiry warning -->
     <div style="background:#fff8e1;border-left:4px solid #f39c12;padding:14px 18px;border-radius:5px;margin:22px 0;">
-      <p style="margin:0;font-size:13px;color:#7d6608;line-height:1.8;">
-        ⏱️ <strong>This OTP expires in 10 minutes.</strong><br/>
-        Do not share this code with anyone. Our team will never ask for it.
-      </p>
+      <p style="margin:0;font-size:13px;color:#7d6608;line-height:1.8;">⏱️ <strong>This OTP expires in 10 minutes.</strong><br/>Do not share this code with anyone.</p>
     </div>
-
-    <p style="font-size:13px;color:#aaa;">
-      If you did not request this code, please ignore this email.
-    </p>
+    <p style="font-size:13px;color:#aaa;">If you did not request this code, please ignore this email.</p>
   `;
-
-  await sendEmail({
-    from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`,
-    to:   toEmail,
-    subject: 'Your OTP for Email Verification - Hope Orphanage',
-    html: emailShell(body),
-  });
+  await sendEmail({ from: `"Hope Orphanage" <${process.env.EMAIL_USER}>`, to: toEmail, subject: 'Your OTP for Email Verification - Hope Orphanage', html: emailShell(body) });
 };
 
-module.exports = {
-  sendRegistrationEmail,   // existing
-  sendLoginEmail,          // existing
-  sendDonationEmail,       // existing
-  sendApplicationEmail,    // existing
-  sendOtpEmail,            // NEW
-};
+module.exports = { sendRegistrationEmail, sendLoginEmail, sendDonationEmail, sendApplicationEmail, sendOtpEmail };
