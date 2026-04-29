@@ -1,202 +1,222 @@
 
-# 🏠 Orphanage Authentication System
-## Complete Step-by-Step Setup Guide for Beginners
+# 🏠 Hope Orphanage Management System
 
-
----
-
-## ✅ PREREQUISITES — Install These First
-
-Before running the project, you need these installed on your PC:
-
-### 1. Node.js (includes npm)
-- Download from: https://nodejs.org
-- Choose the **LTS** version (recommended)
-- After install, open Command Prompt and verify:
-  ```
-  node --version
-  npm --version
-  ```
-  You should see version numbers like `v20.x.x` and `10.x.x`
-
-### 2. MySQL
-- Download from: https://dev.mysql.com/downloads/installer/
-- During install, choose **MySQL Server** + **MySQL Workbench**
-- Remember the **root password** you set — you'll need it!
-- After install, verify in Command Prompt:
-  ```
-  mysql --version
-  ```
-
-### 3. A Code Editor (optional but recommended)
-- Download **VS Code** from: https://code.visualstudio.com
+A full-stack web application for managing an orphanage — featuring user authentication, child profiles, donation tracking, adoption applications, and automated email notifications.
 
 ---
 
-## 🚀 STEP-BY-STEP SETUP
+## 📋Overview
+
+**Hope Orphanage** is a comprehensive management system designed to streamline orphanage operations. It provides a centralized platform for managing children records, processing donations (both monetary and in-kind), handling adoption applications, and maintaining communication with donors and prospective parents through automated emails.
+
+The system consists of two main components:
+- **Backend API** (Node.js + Express + MySQL)
+- **Frontend** (React.js)
 
 ---
 
-### STEP 1 — Set Up the Database
+## ✨ Key Features
 
-**Option A: Using MySQL Workbench (Recommended for beginners)**
+### 🔐 Authentication & Security
+- **User Registration & Login** — Secure account creation with bcrypt password hashing
+- **JWT Token Authentication** — Stateless session management with 24-hour token expiry
+- **Email Verification via OTP** — 6-digit one-time passwords sent to user emails for form submissions
+- **Aadhaar Validation** — 12-digit Aadhaar number masking for privacy compliance
 
-1. Open **MySQL Workbench**
-2. Click on your local connection (usually `Local instance MySQL`)
-3. Enter your **root password**
-4. Click **File → Open SQL Script**
-5. Browse and select `database.sql` from this project
-6. Click the **⚡ lightning bolt** button (Execute) to run it
-7. You should see `orphanage_db` appear in the left panel under Schemas
+### 👶 Children Management
+- **Child Profiles** — View all registered children with details including name, age, gender, health status, education level, and admission date
+- **Status Tracking** — Track children status: Active, Adopted, or Transferred
+- **Age Calculation** — Automatic age computation from date of birth
 
-**Option B: Using Command Line**
+### 💝 Donation System
+- **Multiple Donation Types** — Support for:
+  - 💵 Money (monetary donations)
+  - 🍚 Food (groceries, meals)
+  - 👕 Clothes (clothing items)
+  - 🎓 Scholarship (educational support)
+- **Offline Donation Scheduling** — Donors can schedule visits to the orphanage
+- **Donation Tracking** — Complete history of all donations with donor details, amounts, and visit dates
+- **Summary Dashboard** — Total donations count and money raised
 
-1. Open Command Prompt
-2. Run:
-   ```bash
-   mysql -u root -p
-   ```
-3. Enter your MySQL root password
-4. Run:
-   ```sql
-   source C:/path/to/orphanage-auth/database.sql
-   ```
-   (Replace the path with where you saved the project)
+### 🏠 Adoption Applications
+- **Application Types** — Support for Adoption, Foster Care, and Volunteer requests
+- **Application Tracking** — View all applications with status (Pending, Approved, Rejected)
+- **OTP Verification** — Email verification required before submission
+
+### 📊 Dashboard & Analytics
+- **Real-time Statistics** — Total children, donations, applications, and events count
+- **Total Funds Raised** — Sum of all monetary donations
+- **Recent Activity Feed** — Latest updates on children, donations, and applications
+
+### 📧 Email Notifications
+Automated email confirmations for:
+- User registration
+- Login notifications
+- Donation submissions (with visit date details)
+- Adoption application receipts
+- OTP verification codes
 
 ---
 
-### STEP 2 — Configure the Backend
+## 🛠️ Technology Stack
 
-1. Open the file `backend/.env` in any text editor (Notepad or VS Code)
-2. Fill in your details:
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React.js, CSS-in-JS (inline styles) |
+| **Backend** | Node.js, Express.js |
+| **Database** | MySQL with connection pooling |
+| **Authentication** | JWT (JSON Web Tokens), bcrypt |
+| **Email Service** | Nodemailer with Gmail SMTP |
+| **API Communication** | RESTful JSON API |
+
+---
+
+## 🎯 Use Cases
+
+### For Orphanage Administrators
+- View dashboard with quick statistics
+- Manage and monitor all children records
+- Track all incoming donations (money, food, clothes, scholarships)
+- Review and process adoption applications
+
+### For Donors
+- Register and login to the system
+- Submit offline donations of money, food, clothes, or scholarships
+- Schedule convenient visit dates to the orphanage
+- Receive email confirmations for their contributions
+
+### For Prospective Parents
+- Submit adoption applications
+- Choose between Adoption, Foster Care, or Volunteer options
+- Receive application status updates via email
+
+### For General Public
+- Learn about the orphanage via the About Us page
+- Contact the orphanage through the Contact page
+- View publicly accessible information
+
+---
+
+## 📱 Pages & Navigation
+
+| Page | Description |
+|------|-------------|
+| **Login** | User authentication with email/password |
+| **Register** | New user account creation |
+| **Dashboard** | Overview with stats, activity feed, and quick actions |
+| **Children** | Grid view of all children with status badges |
+| **Donations** | Table of all donations with filtering by type |
+| **Donate Form** | Multi-step donation form with OTP verification |
+| **Adopt Form** | Application form for adoption/foster/volunteer |
+| **Contact Us** | Orphanage contact information and location |
+| **About Us** | Mission, vision, and organizational details |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- MySQL Server (v8.0+)
+- Gmail account (for sending emails)
+
+### Installation
+
+```bash
+# Clone the repository
+cd orphanage-auth
+
+# Install backend dependencies
+cd backend
+npm install
+
+# Install frontend dependencies
+cd ../frontend
+npm install
+```
+
+### Configuration
+
+Create a `.env` file in the `backend` folder:
 
 ```env
 PORT=5000
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=your_actual_mysql_password    ← Change this!
+DB_PASSWORD=your_mysql_password
 DB_NAME=orphanage_db
-JWT_SECRET=orphanage_super_secret_key_2024
-EMAIL_USER=yourgmail@gmail.com            ← Change this!
-EMAIL_PASS=your_app_password_here         ← Change this! (see Step 3)
+JWT_SECRET=your_secret_key
+EMAIL_USER=yourgmail@gmail.com
+EMAIL_PASS=your_gmail_app_password
 ```
 
----
+### Database Setup
 
-### STEP 3 — Set Up Gmail App Password (for Email)
+1. Open **MySQL Workbench** or command line
+2. Run the SQL scripts in this order:
+   - `database.sql` — Creates the database schema
+   - `children_dummy_data.sql` — Adds sample children data
 
-You CANNOT use your normal Gmail password. You need an **App Password**.
-
-1. Go to: https://myaccount.google.com
-2. Click **Security** in the left sidebar
-3. Under "How you sign in to Google", click **2-Step Verification**
-   - If not enabled, enable it first (required!)
-4. Scroll down to the bottom and click **App Passwords**
-5. In "App name" type: `Orphanage App`
-6. Click **Create**
-7. Google will show a **16-character password** like: `abcd efgh ijkl mnop`
-8. Copy this password (without spaces) and paste it into `.env` as `EMAIL_PASS`
-
-> ⚠️ Important: Keep this password secret. Never share it or upload it to GitHub.
-
----
-
-### STEP 4 — Install & Run the Backend
-
-Open **Command Prompt** or **Terminal**:
+### Running the Application
 
 ```bash
-# Navigate into the backend folder
-cd C:\path\to\orphanage-auth\backend
-
-# Install all required packages (do this only once)
-npm install
-
-# Start the server
+# Start backend (Terminal 1)
+cd backend
 node server.js
-```
 
-✅ You should see:
-```
-✅ Server running at http://localhost:5000
-```
-
-> Keep this terminal window open! The backend must stay running.
-
----
-
-### STEP 5 — Install & Run the Frontend
-
-Open a **second** Command Prompt window (keep the backend one open):
-
-```bash
-# Navigate into the frontend folder
-cd C:\path\to\orphanage-auth\frontend
-
-# Install all required packages (do this only once)
-npm install
-
-# Start the React app
+# Start frontend (Terminal 2)
+cd frontend
 npm start
 ```
 
-✅ After a moment, your browser should automatically open:
-```
-http://localhost:3000
-```
-
-You'll see the **Login page** of the app!
-
+Access the application at: **http://localhost:3000**
 
 ---
 
+## 📂 Project Structure
 
-
----
-Orphanagw-management-system/
-│
-├── database.sql                  ← Run this FIRST in MySQL
-├── children_dummy_data.sql       ← Run this SECOND (15 children + DB migration)
+```
+orphanage-auth/
+├── database.sql                 # Database schema
+├── children_dummy_data.sql      # Sample children data
+├── donations_migration.sql      # Donations table migration
+├── applications_migration.sql   # Applications table migration
+├── MASTER_fix.sql               # Database fixes
 │
 ├── backend/
-│   ├── .env                      ← ⚠️ Edit this with your MySQL & Gmail details
-│   ├── package.json
-│   ├── server.js                 ← Express entry point
-│   ├── db.js                     ← MySQL connection
-│   ├── auth.js                   ← Register & Login routes
-│   ├── routes.js                 ← All feature routes (stats, children, donations, OTP...)
-│   ├── mailer.js                 ← All email functions
-│   └── otpStore.js               ← OTP memory store (10-min expiry)
+│   ├── server.js               # Express server entry point
+│   ├── db.js                   # MySQL connection pool
+│   ├── auth.js                 # Authentication routes
+│   ├── routes.js               # API routes (children, donations, etc.)
+│   ├── mailer.js               # Email sending functions
+│   ├── otpStore.js             # OTP generation & verification
+│   └── package.json
 │
 └── frontend/
-    ├── package.json
-    └── src/
-        ├── index.js
-        ├── App.js                ← Page switcher (all 8 pages)
-        ├── api.js                ← All fetch() functions
-        └── pages/
-            ├── Login.js          ← Login page
-            ├── Register.js       ← Register page
-            ├── Dashboard.js      ← Live stats + manage sections
-            ├── Children.js       ← View all children (cards)
-            ├── Donations.js      ← View all donations (table)
-            ├── DonateForm.js     ← Donate form + OTP verification
-            ├── AdoptForm.js      ← Adopt form + OTP verification
-            └── ContactUs.js      ← Contact info page
+    ├── src/
+    │   ├── App.js              # Main React component
+    │   ├── api.js              # API helper functions
+    │   └── pages/
+    │       ├── Login.js
+    │       ├── Register.js
+    │       ├── Dashboard.js
+    │       ├── Children.js
+    │       ├── Donations.js
+    │       ├── DonateForm.js
+    │       ├── AdoptForm.js
+    │       ├── ContactUs.js
+    │       └── AboutUs.js
+    └── package.json
+```
 
 ---
 
-## 📞 QUICK REFERENCE — Running the App
+## 📄 License
 
-Every time you want to use the app:
+This project is for educational purposes. Feel free to use and modify as needed.
 
-1. Open **Terminal 1** → go to `backend/` → run `node server.js`
-2. Open **Terminal 2** → go to `frontend/` → run `npm start`
-3. Open browser → go to `http://localhost:3000`
+---
 
- 
+## 🤝 Contributing
 
-
-# Orphanage-Management-System
-a web-based application designed to efficiently manage and streamline the daily operations of an orphanage. It provides a centralized platform for administrators to handle records, monitor activities, and improve overall organizational efficiency.
-
+Contributions are welcome! Please feel free to submit a Pull Request.

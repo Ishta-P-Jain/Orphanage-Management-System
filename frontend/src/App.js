@@ -9,27 +9,22 @@
 
 import React, { useState, useEffect } from 'react';
 
-import Login      from './pages/Login';
-import Register   from './pages/Register';
-import Dashboard  from './pages/Dashboard';
-import Children   from './pages/Children';
-import Donations  from './pages/Donations';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Children from './pages/Children';
+import Donations from './pages/Donations';
 import DonateForm from './pages/DonateForm';
-import AdoptForm  from './pages/AdoptForm';
-import ContactUs  from './pages/ContactUs';
-
-// NEW
+import AdoptForm from './pages/AdoptForm';
+import ContactUs from './pages/ContactUs';
 import AboutUs from './pages/AboutUs';
 
 function App() {
-  // All pages:
-  // 'login' | 'register' | 'dashboard' |
-  // 'children' | 'donations' | 'donate' | 'adopt' | 'contact' | 'about'
   const [page, setPage] = useState('login');
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token     = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
     if (token && savedUser) {
       setUser(JSON.parse(savedUser));
@@ -50,7 +45,7 @@ function App() {
   };
 
   const handleNavigate = (navigateTo) => setPage(navigateTo);
-  const handleBack     = ()           => setPage('dashboard');
+  const handleBack = () => setPage('dashboard');
 
   return (
     <>
@@ -70,14 +65,14 @@ function App() {
           onNavigate={handleNavigate}
         />
       )}
-      {page === 'children'  && <Children  onBack={handleBack} />}
+      {page === 'children' && <Children onBack={handleBack} />}
       {page === 'donations' && <Donations onBack={handleBack} />}
-      {page === 'donate'    && <DonateForm onBack={handleBack} />}
-      {page === 'adopt'     && <AdoptForm  onBack={handleBack} />}
-      {page === 'contact'   && <ContactUs  onBack={handleBack} />}
+      {page === 'donate' && <DonateForm onBack={handleBack} />}
+      {page === 'adopt' && <AdoptForm onBack={handleBack} />}
+      {page === 'contact' && <ContactUs onBack={handleBack} />}
 
       {/* NEW — About Us page */}
-      {page === 'about'     && <AboutUs    onBack={handleBack} />}
+      {page === 'about' && <AboutUs onBack={handleBack} />}
     </>
   );
 }
